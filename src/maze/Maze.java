@@ -30,6 +30,7 @@ package maze;
 import java.awt.Color;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -48,7 +49,7 @@ public class Maze implements Iterable<Room>
 	public Room current;
 	
 	/**
-	 * Returns the default maze
+	 * Returns the default maze.
 	 */
 	public Maze()
 	{
@@ -56,7 +57,7 @@ public class Maze implements Iterable<Room>
 	}
 	
 	/**
-	 * Creates a default maze of two rooms and a door
+	 * Creates a default maze of two rooms and a door.
 	 */
 	private void createDefaultMaze() {
 		Room r1 = new Room(0);
@@ -82,21 +83,35 @@ public class Maze implements Iterable<Room>
 	 * color settings (optional) and the .maze file
 	 */
 	public Maze(String[] args) {
-		if (args.length == 0)
-			createDefaultMaze();
-		else
+		if (args != null && args.length != 0)
 			createMazeByArgs(args);
+		else
+			createDefaultMaze();
 	}
 
 	/**
-	 * Create a custom maze
+	 * Create a custom maze.
 	 * @param args
 	 * it can be like "*.maze" or "wall=?...*.maze"
 	 */
 	private void createMazeByArgs(String[] args) {
 		setColors(args);
+		String path = args[args.length-1];
+		if (path.matches(".*new.*maze$"))
+			createMazeFromFileNew(path);
+		else if (path.matches(".*maze$"))
+			createMazeFromFileOld(path);
+		else
+			System.out.println("File not found.");
+	}
+
+	/**
+	 * Create a custom maze from an old-styled configuration file.
+	 * @param path
+	 * path of the configuration file
+	 */
+	private void createMazeFromFileOld(String path) {
 		try {
-			String path = args[args.length-1];
 			Scanner scanner = new Scanner(new File(path));
 			String line;
 			LinkedList<Room> rooms = new LinkedList<>();
@@ -143,6 +158,69 @@ public class Maze implements Iterable<Room>
 		}
 	}
 
+	/**
+	 * Create a custom maze from a new configuration file.
+	 * @param path
+	 * path of the configuration file
+	 */
+	private void createMazeFromFileNew(String path) {
+		try {
+			Scanner scanner = new Scanner(new File(path));
+			String line;
+			LinkedList<Room> rooms = new LinkedList<>();
+			LinkedList<String[]> roomConfs = new LinkedList<>();
+			LinkedList<Door> doors = new LinkedList<>();
+			ArrayList<String> roomNames = new ArrayList<String>();
+			ArrayList<String> doorNames = new ArrayList<String>();
+			while (scanner.hasNextLine()) {
+				line = scanner.nextLine();
+				String[] variables = line.split(" ");
+				if (variables[0].equals("room")) {
+					roomConfs.add(variables);
+					roomNames.add(variables[1]);
+					Room room = new Room(roomNames.size()-1);
+					rooms.add(room);
+					this.rooms.put(room.number, room);
+				}else if (variables[0].equals("door")) {
+					doorNames.add(variables[1]);
+					Door door = new Door(rooms.get(roomNames.indexOf(variables[2])), 
+							rooms.get(roomNames.indexOf(variables[3])));
+					door.setOpen(variables[4].equals("open"));
+					doors.add(door);
+				}
+			}
+			int number = rooms.size();
+			Direction[] directions = {Direction.North, Direction.South, Direction.East, 
+					Direction.West};
+			for (int roomId = 0; roomId < number; roomId++) {
+				Room room = rooms.get(roomId);
+				String[] roomConf = roomConfs.get(roomId);
+				for(int confId = 2; confId < 6; confId ++){
+					String conf = roomConf[confId];
+					MapSite mapSite = null;
+					if(conf.equals("wall")){
+						mapSite = new Wall();
+					}else if (doorNames.contains(conf)) {
+						mapSite = doors.get(doorNames.indexOf(conf));
+					}else {
+						mapSite = rooms.get(roomNames.indexOf(conf));
+					}
+					room.sides[directions[confId - 2].ordinal()] = mapSite;
+				}
+			}
+			scanner.close();
+			this.current = this.rooms.get(0);
+		} catch (FileNotFoundException e) {
+			System.out.println("File Not Found");
+		}
+		
+	}
+
+	/**
+	 * Set colors for Wall, Door and Room, according to <b>args</b>
+	 * @param args
+	 * same as the <b>args</b> of main()
+	 */
 	private void setColors(String[] args) {
 		try {
 			for (int i = 0; i < args.length-1; ++i) {
