@@ -1,0 +1,5 @@
+room x wall a wall wall
+room y a wall b wall
+room z wall wall wall b
+door a x y close
+door b y z open
