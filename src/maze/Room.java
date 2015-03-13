@@ -64,6 +64,10 @@ public class Room extends MapSite
 	@Override
 	public Color getColor()
 	{
-		return Color.WHITE;
+		return color;
 	}
+	public static void setColor(Color color) {
+		Room.color = color;
+	}
+	private static Color color = Color.WHITE;
 }

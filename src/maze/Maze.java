@@ -27,6 +27,7 @@
  */
 package maze;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
@@ -93,8 +94,9 @@ public class Maze implements Iterable<Room>
 	 * it can be like "*.maze" or "wall=?...*.maze"
 	 */
 	private void createMazeByArgs(String[] args) {
-		String path = args[args.length-1];
-		try {		
+		setColors(args);
+		try {
+			String path = args[args.length-1];
 			Scanner scanner = new Scanner(new File(path));
 			String line;
 			LinkedList<Room> rooms = new LinkedList<>();
@@ -138,6 +140,38 @@ public class Maze implements Iterable<Room>
 			this.current = this.rooms.get(0);
 		} catch (FileNotFoundException e) {
 			System.out.println("File Not Found");
+		}
+	}
+
+	private void setColors(String[] args) {
+		try {
+			for (int i = 0; i < args.length-1; ++i) {
+				int eq = args[i].indexOf('=');
+				if (eq == -1)
+					//no '=' in the args, indicating a grammar error 
+					throw new Exception();
+				String obj = args[i].substring(0, eq).toLowerCase(),
+						color = args[i].substring(eq + 1).toLowerCase();
+				switch (obj) {
+					case "wall":
+						Wall.setColor((Color)(Color.class.getField(color).get(null)));
+						break;
+					case "door":
+						Door.setColor((Color)(Color.class.getField(color).get(null)));
+						break;
+					case "room":
+						Room.setColor((Color)(Color.class.getField(color).get(null)));
+						break;
+					default:
+						//the args is not in [wall, door, room], indicating a grammar error.
+						throw new Exception();
+				}
+			}
+		} catch (Exception e1) {
+			System.out.println("Grammar error in \""+ args +"\". Now using the default colors.");
+			Wall.setColor(Color.BLACK);
+			Door.setColor(Color.LIGHT_GRAY);
+			Room.setColor(Color.WHITE);
 		}
 	}
 

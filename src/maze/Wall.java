@@ -46,6 +46,10 @@ public class Wall extends MapSite
 	@Override
 	public Color getColor()
 	{
-		return Color.BLACK;
+		return color;
 	}
+	public static void setColor(Color color) {
+		Wall.color = color;
+	}
+	private static Color color = Color.BLACK;
 }

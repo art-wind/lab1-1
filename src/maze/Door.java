@@ -81,6 +81,10 @@ public class Door extends MapSite
 	@Override
 	public Color getColor()
 	{
-		return Color.LIGHT_GRAY;
+		return color;
 	}
+	public static void setColor(Color color) {
+		Door.color = color;
+	}
+	private static Color color = Color.LIGHT_GRAY;
 }
