@@ -16,9 +16,14 @@ public class WallTest {
 
 	@Test
 	public void testGetColor() {
-    
-		assertEquals( Color.BLACK , w.getColor());
+		assertEquals(Color.BLACK , w.getColor());
+	}
 	
+	@Test
+	public void testSetColor() {
+		Wall.setColor(Color.RED);
+		assertEquals(Color.RED , w.getColor());
+		Wall.setColor(Color.BLACK);
 	}
 
 }
